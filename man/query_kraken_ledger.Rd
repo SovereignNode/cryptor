@@ -2,16 +2,13 @@
 % Please edit documentation in R/api.R
 \name{query_kraken_ledger}
 \alias{query_kraken_ledger}
-\title{Query Kraken Ledger}
+\title{get ledger information}
 \usage{
-query_kraken_ledger(data_wide)
-}
-\arguments{
-\item{data_wide}{Historical dataframe in 'wide' format}
+query_kraken_ledger()
 }
 \value{
 returns the ledger dataframe
 }
 \description{
-Query Kraken Ledger
+get ledger information
 }

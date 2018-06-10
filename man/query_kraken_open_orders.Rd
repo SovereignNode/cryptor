@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{query_kraken_open_orders}
 \alias{query_kraken_open_orders}
-\title{Query open orders}
+\title{get all open orders}
 \usage{
 query_kraken_open_orders()
 }
@@ -10,5 +10,5 @@ query_kraken_open_orders()
 all open orders
 }
 \description{
-Query open orders
+get all open orders
 }

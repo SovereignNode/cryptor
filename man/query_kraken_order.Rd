@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{query_kraken_order}
 \alias{query_kraken_order}
-\title{Query a single order}
+\title{get a single open order by order_id}
 \usage{
 query_kraken_order(order_id)
 }
@@ -13,5 +13,5 @@ query_kraken_order(order_id)
 result for order
 }
 \description{
-Query a single order
+get a single open order by order_id
 }

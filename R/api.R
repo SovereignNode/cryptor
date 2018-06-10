@@ -1,6 +1,6 @@
 # KRAKEN ----------------------------------------------------------------
 
-#' Functionality to interface with Kraken API
+#' Base functionality to call the Kraken API directly
 #'
 #' @param url Character input URL to query
 #' @param args List of additional arguments to query
@@ -10,7 +10,7 @@
 #' @return Returns the result from the API query to Kraken
 #' @export
 #'
-query_kraken <-
+kraken_query <-
   function(url,
            args = NULL,
            private = FALSE,
@@ -42,27 +42,27 @@ query_kraken <-
     }
   }
 
-#' Query Assets available on Kraken
+#' get available assets
 #'
 #' @return available assets on Kraken
 #' @export
 #'
-query_kraken_assets <- function() {
-    assets <- query_kraken(url = "https://api.kraken.com/0/public/Assets")
+kraken_assets <- function() {
+    assets <- kraken_query(url = "https://api.kraken.com/0/public/Assets")
     df     <- do.call(dplyr::bind_rows,
                       assets$result)
   return(df)
 }
 
-#' Query Assetpairs available on Kraken
+#' get available assetpairs
 #'
 #' @return available assetpairs on Kraken
 #' @export
-#' @importFrom magrittr "%>%"
 #'
-query_kraken_assetpairs <-
-  function(incl_darkpool = FALSE) {
-    assets <- query_kraken(url = "https://api.kraken.com/0/public/AssetPairs")
+kraken_assetpairs <-
+  function(excl_darkpool = TRUE) {
+
+    assets <- kraken_query(url = "https://api.kraken.com/0/public/AssetPairs")
     df     <- do.call(dplyr::bind_rows,
                       plyr::llply(
                         .data = assets$result,
@@ -76,24 +76,27 @@ query_kraken_assetpairs <-
     assetpairs <- names(assets$result)
     df         <- dplyr::bind_cols(assetpair = assetpairs, df)
 
-    if (incl_darkpool){ df <- df %>% filter(!grepl(pattern = ".d", x = .$assetpair)) }
-
+    if (excl_darkpool){ df <- df %>% dplyr::filter(!grepl(pattern = ".d", x = .$assetpair)) }
     return(df)
 }
 
 
-#' Query OHLC data from Kraken
+#' get candle data
 #'
-#' @param pairs list of assetpairs to retrieve OHLC data
-#' @param interval integer corresponding to time interval
+#' @param pairs list of assetpair names or altnames to retrieve OHLC data.
+#' @param interval integer corresponding to candle interval
 #'
 #' @return a dataframe with OHLC data
 #' @export
 #'
-query_kraken_prices <- function(pairs, interval = 1440) {
-  if (!is.numeric(interval)) {
-    stop("interval should be a numeric")
-  }
+kraken_candles <- function(pairs, interval = 1440) {
+
+  # if (!(interval %in% c(1, 5, 15, 30, 60, 240, 1440, 10080, 21600))) {
+  #   stop("interval should be a numeric value corresponding the number of minutes of a candle (1, 5, 15, 30, 60, 240, 1440).")
+  # }
+
+  assertthat::assert_that(is_interval_kraken(x = interval))
+  assertthat::assert_that(is_pair_kraken(x = pairs))
 
   # Get the data from the Kraken API
   pair_data <- dplyr::bind_rows(lapply(
@@ -109,14 +112,16 @@ query_kraken_prices <- function(pairs, interval = 1440) {
 }
 
 
-#' Robust extraction of OHLC prices from Kraken
+#' (internal) get ohlc data
 #'
 #' @param pair assetpair to retrieve OHLC
 #' @param interval integer corresponding to time interval
 #'
 #' @return
+#' @import tidyverse
 #'
 query_kraken_ohlc <- function(pair, interval) {
+
   # Function to get OHLC data
   query <- function() {
     # Construct URL
@@ -127,7 +132,7 @@ query_kraken_ohlc <- function(pair, interval) {
              interval)
 
     # Query Kraken API
-    frame <- query_kraken(url = url)$result[[1]]
+    frame <- kraken_query(url = url)$result[[1]]
 
     # Break if frame is NULL
     if (is.null(frame)) {
@@ -180,7 +185,7 @@ query_kraken_ohlc <- function(pair, interval) {
     Sys.sleep(sleep_base * (log(attempt) + 1))
     attempt <- attempt + 1
 
-    try(ohlc_data <- query())
+    try(ohlc_data <- query(), silent = TRUE)
 
     if (attempt > max_attemps) {
       stop(paste0(
@@ -194,32 +199,25 @@ query_kraken_ohlc <- function(pair, interval) {
 }
 
 
-#' Query Kraken Ledger
-#'
-#' @param data_wide Historical dataframe in 'wide' format
+#' get ledger information
 #'
 #' @return returns the ledger dataframe
 #' @export
-query_kraken_ledger <- function(data_wide) {
+#' @import tidyverse
+#'
+query_kraken_ledger <- function() {
 
-  # Initial query to Ledger
-  Ledger <-
-    query_kraken(url = "https://api.kraken.com/0/private/Ledgers",
-                 private = TRUE,
-                 account = "fcd")$result$ledger
-
-  # Continue using 'offset' untill Ledger < 50 items.
-  Ledger.comb <- Ledger
+  # Query ledger 50 items at a time
+  Ledger.comb <- list()
   ofset <- 0
   while (length(Ledger) >= 50) {
-    ofset = ofset + 50
-    Ledger = query_kraken(
-      url = "https://api.kraken.com/0/private/Ledgers",
-      private = TRUE,
-      account = "fcd",
-      args = list(ofs = ofset)
-    )$result$ledger
+
+    Ledger <- kraken_query(url = "https://api.kraken.com/0/private/Ledgers",
+                           private = TRUE,
+                           account = "fcd",
+                           args = list(ofs = ofset))$result$ledger
     Ledger.comb = modifyList(Ledger.comb, Ledger)
+    ofset <- ofset + 50
   }
 
   # Bind together
@@ -236,14 +234,15 @@ query_kraken_ledger <- function(data_wide) {
       "fee",
       "balance"
     )) %>%
-    left_join(y = select(asset_pairs, altname, base),
+    left_join(y = select(query_kraken_assetpairs(), altname, base),
               by = c("asset" = "base")) %>%
     mutate(altname = if_else(asset == "ZEUR", "ZEUR", altname))
 
   # Let's check if there is no NA's
   if (any(is.na(x = pull(Ledger, altname)))) {
-    stop("Ledger could not be fully joined by assetpairs. Please inspect.")
+    warning("Ledger could not be fully joined by assetpairs. Please inspect manually.")
   }
+
 
   # Next add prices
   data_long <- data_wide %>%
@@ -295,20 +294,20 @@ query_kraken_ledger <- function(data_wide) {
 }
 
 
-#' Query open orders
+#' get all open orders
 #'
 #' @return all open orders
 #' @export
 query_kraken_open_orders <- function() {
   open_orders <-
-    query_kraken(url = "https://api.kraken.com/0/private/OpenOrders",
+    kraken_query(url = "https://api.kraken.com/0/private/OpenOrders",
                  private = TRUE,
                  account = "fcd")
   # Maybe some checks on error status
   return(open_orders$result$open)
 }
 
-#' Query a single order
+#' get a single open order by order_id
 #'
 #' @param order_id an orderid
 #'
@@ -316,7 +315,7 @@ query_kraken_open_orders <- function() {
 #' @export
 query_kraken_order <- function(order_id) {
   order_result <-
-    query_kraken(
+    kraken_query(
       url = "https://api.kraken.com/0/private/QueryOrders",
       account = "fcd",
       private = TRUE,
@@ -333,6 +332,7 @@ query_kraken_order <- function(order_id) {
 #' @return bid and ask orderbook
 #' @export
 query_kraken_orderbook <- function(pair, count = 10) {
+
   if (is_null(pair)) {
     stop("Please provide a pair...")
   }
@@ -342,7 +342,7 @@ query_kraken_orderbook <- function(pair, count = 10) {
            pair,
            "&count=",
            count)
-  OrderBook <- query_kraken(url = url)$result[[1]]
+  OrderBook <- kraken_query(url = url)$result[[1]]
 
   # We have to add names to use bind_rows
   for (i in 1:2) {
@@ -375,24 +375,25 @@ query_kraken_orderbook <- function(pair, count = 10) {
 #' @return ticker information for a given assetpair
 query_kraken_ticker <- function(pair) {
   url <- paste0("https://api.kraken.com/0/public/Ticker?pair=", pair)
-  ticker <- query_kraken(url = url)
+  ticker <- kraken_query(url = url)
   return(ticker)
 }
 
-#' Query spread information from Kraken
+#' get spread information
 #'
 #' @param pair an assetpair
 #'
 #' @return dataframe with spread information
 #' @export
 query_kraken_spread <- function(pair) {
+
   if (is_null(pair)) {
     stop("Please provide a pair...")
   }
 
   url <- paste0("https://api.kraken.com/0/public/Spread?pair=", pair)
 
-  spread <- query_kraken(url = url)$result[[1]]
+  spread <- kraken_query(url = url)$result[[1]]
   spread <- set_names(x = lapply(
     X = spread,
     FUN = set_names,
@@ -420,6 +421,7 @@ query_kraken_spread <- function(pair) {
 #' @return nothing
 #' @export
 rebalance_kraken_portfolio <- function(current_allocation) {
+
   answer <- readline(prompt = "Rebalancing portfolio. Press Y to continue: ")
   if (toupper(answer) != "Y") { stop("User aborted") }
 
@@ -443,7 +445,6 @@ rebalance_kraken_portfolio <- function(current_allocation) {
     for (j in 1:nrow(to_allocate)) {
       Pair <- as.character(to_allocate[j, 1])
 
-      #KrakenPair <- KrakenDictionary(pair = Pair)
       Type <- to_allocate %>%
         filter(ASSET == Pair) %>%
         select(TYPE) %>%
@@ -492,20 +493,12 @@ add_order_until_complete <- function(pair, type, volume) {
     # Since this is a loop, danger to create multiple orders here !
     # First time in this loop there will be NO open orders.
     if (first) {
-      PlacedOrder <-
-        query_kraken(
-          url = "https://api.kraken.com/0/private/AddOrder",
-          account = "fcd",
-          private = TRUE,
-          args = list(
-            pair = pair,
-            type = type,
-            ordertype = "limit",
-            price = BidPrice,
-            # Highest bid price
-            volume = volume
-          )
-        )
+      PlacedOrder <- add_kraken_order(account = "fcd",
+                                      assetpair = pair,
+                                      direction = type,
+                                      type = "limit",
+                                      price = BidPrice,
+                                      volume = volume)
       BidPriceOrig <- BidPrice # store this
       OrderID <- PlacedOrder$result$txid
       first <- FALSE
@@ -515,35 +508,25 @@ add_order_until_complete <- function(pair, type, volume) {
         # nothing to do
       } else{
         close_open_orders(refid = OrderID)
-        PlacedOrder <-
-          query_kraken(
-            url = "https://api.kraken.com/0/private/AddOrder",
-            account = "fcd",
-            private = TRUE,
-            args = list(
-              pair = pair,
-              type = type,
-              ordertype = "limit",
-              price = BidPrice,
-              volume = volume
-            )
-          )
+        PlacedOrder <- add_kraken_order(account = "fcd",
+                                        assetpair = pair,
+                                        direction = type,
+                                        type = "limit",
+                                        price = BidPrice,
+                                        volume = volume)
         BidPriceOrig <- BidPrice
         OrderID <- PlacedOrder$result$txid
         cat("Updated order: ", PlacedOrder$result$descr, "\n")
       }
     }
-    #AlreadyOpen <- GetOpenOrders()
 
     Sys.sleep(1)
 
     # Check for complete
     # WHAT IF ONLY PARTIALLY COMPLETE?
-    QueryOrder <- query_kraken_order(order_id = OrderID)
-
-
-    QueryOrder_Status <- QueryOrder$result[[1]]$status
-    QueryOrder_Volume <- QueryOrder$result[[1]]$vol
+    QueryOrder           <- query_kraken_order(order_id = OrderID)
+    QueryOrder_Status    <- QueryOrder$result[[1]]$status
+    QueryOrder_Volume    <- QueryOrder$result[[1]]$vol
     QueryOrder_Volume_ex <- QueryOrder$result[[1]]$vol_ex
 
     if (QueryOrder_Status == "closed") {
@@ -559,19 +542,49 @@ add_order_until_complete <- function(pair, type, volume) {
   }
 }
 
-#' Close all open orders
+#' add order
+#'
+#' @param account a valid account (see kraken_query())
+#' @param assetpair a valid assetpair
+#' @param direction trade direction (buy or sell)
+#' @param type an ordertype
+#' @param price a price for the order
+#' @param volume volume to trade
+#'
+#' @return result of AddOrder query on Kraken
+#' @export
+#'
+add_kraken_order <- function(account, assetpair, direction, type, price, volume){
+
+  o <- kraken_query(
+    url = "https://api.kraken.com/0/private/AddOrder",
+    account = account,
+    private = TRUE,
+    args = list(
+      pair = assetpair,
+      type = direction,
+      ordertype = type,
+      price = price,
+      volume = volume
+    )
+  )
+  return(o)
+}
+
+#' Close all open orders or a selection of order ids
 #'
 #' @param refids vector of refids to close (optional)
 #'
 #' @return nothing
 #' @export
-close_open_orders <- function(refids = NULL) {
+close_kraken_open_orders <- function(ids = NULL) {
+
   close_open_order <- function(refids) {
     if (is_null(refids)) {
       stop("No refid given to cancel")
     }
     for (i in refids) {
-      query_kraken(
+      kraken_query(
         url = "https://api.kraken.com/0/private/CancelOrder",
         account = "fcd",
         private = TRUE,
@@ -581,8 +594,8 @@ close_open_orders <- function(refids = NULL) {
     }
   }
 
-  if (!is_null(refids)) {
-    close_open_order(refids = refids)
+  if (!is_null(ids)) {
+    close_open_order(refids = ids)
 
   } else{
     # if NULL then get all refid's to cancel
@@ -591,8 +604,14 @@ close_open_orders <- function(refids = NULL) {
     if (is_empty(open_orders)) {
       cat("Nothing to close.\n")
     } else{
-      refids <- names(open_orders)
-      close_open_order(refids = refids)
+      ids <- names(open_orders)
+      close_open_order(refids = ids)
     }
   }
 }
+
+
+
+# BITSCREENER -------------------------------------------------------------
+
+

@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{query_kraken_ohlc}
 \alias{query_kraken_ohlc}
-\title{Robust extraction of OHLC prices from Kraken}
+\title{(internal) get ohlc data}
 \usage{
 query_kraken_ohlc(pair, interval)
 }
@@ -11,9 +11,6 @@ query_kraken_ohlc(pair, interval)
 
 \item{interval}{integer corresponding to time interval}
 }
-\value{
-
-}
 \description{
-Robust extraction of OHLC prices from Kraken
+(internal) get ohlc data
 }

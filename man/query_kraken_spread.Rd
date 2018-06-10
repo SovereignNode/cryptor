@@ -2,7 +2,7 @@
 % Please edit documentation in R/api.R
 \name{query_kraken_spread}
 \alias{query_kraken_spread}
-\title{Query spread information from Kraken}
+\title{get spread information}
 \usage{
 query_kraken_spread(pair)
 }
@@ -13,5 +13,5 @@ query_kraken_spread(pair)
 dataframe with spread information
 }
 \description{
-Query spread information from Kraken
+get spread information
 }
