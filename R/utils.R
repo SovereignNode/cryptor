@@ -1,4 +1,4 @@
 #' @importFrom magrittr %>%
-#' @export
+#' @keywords internal
 magrittr::'%>%'
 

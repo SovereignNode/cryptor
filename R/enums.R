@@ -9,3 +9,8 @@ enum_interval_kraken <- function(){
        '1w' = 10080,
        '1M' = 21600)
 }
+
+enum_ordertype_kraken <- function(){
+  list('market' = 'market',
+       'limit' = 'limit')
+}
