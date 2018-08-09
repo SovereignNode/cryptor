@@ -11,11 +11,11 @@
 #'
 query <- function(url, config, post_data) {
 
-  res <- POST(url = url, config = config, body = post_data)
+  res <- httr::POST(url = url, config = config, body = post_data)
 
   if(res$status_code != 200) {
-    stop(paste0("API request failed with status code: ", http_status(res)$message))
+    stop(paste0("API request failed with status code: ", httr::http_status(res)$message))
   }
 
-  content(res)
+  httr::content(res)
 }

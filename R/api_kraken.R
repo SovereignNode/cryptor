@@ -46,16 +46,16 @@ query_kraken <- function(url, sign = FALSE, args = NULL) {
 sign_kraken <- function(url, secret, key, nonce, post_data){
 
   method_path <- gsub("^.*?kraken.com", "", url)
-  sign        <- hmac(key = base64enc::base64decode(secret),
-                      object = c(charToRaw(method_path),
-                                 digest(object = paste0(nonce, post_data),
-                                        algo = "sha256",
-                                        serialize = FALSE,
-                                        raw = TRUE)),
-                      algo = "sha512",
-                      raw = TRUE)
+  sign        <- digest::hmac(key = base64enc::base64decode(secret),
+                              object = c(charToRaw(method_path),
+                                         digest::digest(object = paste0(nonce, post_data),
+                                                algo = "sha256",
+                                                serialize = FALSE,
+                                                raw = TRUE)),
+                              algo = "sha512",
+                              raw = TRUE)
 
-  add_headers(c(`API-Key` = key, `API-Sign` = base64enc::base64encode(sign)))
+  httr::add_headers(c(`API-Key` = key, `API-Sign` = base64enc::base64encode(sign)))
 }
 
 
