@@ -1,131 +1,56 @@
-key <- "9bd54db51ed9bf555dad7a2a457294ff"
-url_base <- "https://api.nomics.com/v1"
-endpoint <- "markets"
+query_nomics <- function(endpoint, args = list()){
 
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key)
+  key <- key_nomics()
 
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
+  post_data <- paste0("https://api.nomics.com/v1","/",endpoint)
 
-res <- httr::POST(url = url)
-markets <- bind_rows(content(res))
+  args_key <- list(key = key)
+  args_full <- append(args_key, args)
 
+  url <- paste(post_data, paste(paste(names(args_full), args_full, sep = "="), collapse = "&"), sep = "?")
 
+  res <- httr::POST(url = url)
+  res <- httr::content(res)
 
-endpoint <- "markets/interval"
+  return(res)
 
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key, currency = "BTC")
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
+}
 
 
-endpoint <- "markets/prices"
+nomics_markets <- function(){
+  res <- query_nomics(endpoint = "markets", args = list())
+  bind_rows(res)
+}
 
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key, currency = "BTC")
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-endpoint <- "exchange-markets/interval"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key)
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
+# nomics_markets_interval <- function(currency){
+#   query_nomics(endpoint = "markets/interval", args = list(currency = currency))
+# }
+#
+# nomics_markets_prices <- function(currency){
+#   query_nomics(endpoint = "markets/prices", args = list(currency = currency))
+# }
+#
+# nomics_exchange_interval <- function(){
+#   query_nomics(endpoint = "exchange-markets/interval", args = list())
+# }
 
 
+nomics_currencies_interval <- function(start, end){
+  start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
+  end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
+  res <- query_nomics(endpoint = "currencies/interval", args = list(start = start, end = end))
+  bind_rows(rmNullObs(x = res))
+}
 
-endpoint <- "exchange-markets/prices"
+nomics_supplies_interval <- function(start, end){
+  start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
+  end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
+  res <- query_nomics(endpoint = "supplies/interval", args = list(start = start, end = end))
+  bind_rows(rmNullObs(x = res))
+}
 
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key)
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-
-
-endpoint <- "prices"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key)
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-
-endpoint <- "candles"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key, interval = "1d", currency = "BTC")
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-
-endpoint <- "exchange_candles"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key, interval = "1m", exchange = "bitfinex", market = "avtbtc")
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-
-endpoint <- "dashboard"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key)
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-
-endpoint <- "market-cap/history"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key, start = "2017-07-14T00%3A00%3A00Z")
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
-
-
-
-
-endpoint <- "exchange-rates"
-
-post_data <- paste0(url_base,"/",endpoint)
-args <- list(key = key)
-
-url <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "?")
-
-res <- httr::POST(url = url)
-bind_rows(content(res))
+nomics_marketcap <- function(start, end){
+  start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
+  end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
+  query_nomics(endpoint = "market-cap/history", args = list(start = start, end = end))
+}

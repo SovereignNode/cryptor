@@ -102,3 +102,36 @@ check_credentials_kraken <- function() {
     stop('Kraken API key not set? Call credentials_kraken()')
   }
 }
+
+
+
+# Nomics ------------------------------------------------------------------
+
+#' Look up Nomics API key stored in the environment
+#' @return string
+#' @keywords internal
+key_nomics <- function() {
+  check_credentials_nomics()
+  credentials$key_nomics
+}
+
+
+#' Sets the API key and secret to interact with the Nomics API
+#' @param key string
+#' @export
+#' @examples \dontrun{
+#' credentials_nomics('foo')
+#' }
+credentials_nomics <- function(key) {
+  credentials$key_nomics <- key
+}
+
+#' Check if Nomics credentials were set previously
+#' @return fail on missing credentials
+#' @keywords internal
+check_credentials_nomics <- function() {
+  if (is.null(credentials$key_nomics)) {
+    stop('Nomics API key not set? Call credentials_nomics()')
+  }
+}
+
