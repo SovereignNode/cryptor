@@ -17,10 +17,10 @@ query_nomics <- function(endpoint, args = list()){
 }
 
 
-nomics_markets <- function(){
-  res <- query_nomics(endpoint = "markets", args = list())
-  bind_rows(res)
-}
+# nomics_markets <- function(){
+#   res <- query_nomics(endpoint = "markets", args = list())
+#   dplyr::bind_rows(res)
+# }
 
 # nomics_markets_interval <- function(currency){
 #   query_nomics(endpoint = "markets/interval", args = list(currency = currency))
@@ -35,22 +35,49 @@ nomics_markets <- function(){
 # }
 
 
-nomics_currencies_interval <- function(start, end){
-  start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
-  end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
-  res <- query_nomics(endpoint = "currencies/interval", args = list(start = start, end = end))
-  bind_rows(rmNullObs(x = res))
-}
-
-nomics_supplies_interval <- function(start, end){
-  start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
-  end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
-  res <- query_nomics(endpoint = "supplies/interval", args = list(start = start, end = end))
-  bind_rows(rmNullObs(x = res))
-}
-
-nomics_marketcap <- function(start, end){
-  start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
-  end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
-  query_nomics(endpoint = "market-cap/history", args = list(start = start, end = end))
-}
+#' #' Title
+#' #'
+#' #' @param start
+#' #' @param end
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples
+#' nomics_currencies_interval <- function(start, end){
+#'   start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
+#'   end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
+#'   res <- query_nomics(endpoint = "currencies/interval", args = list(start = start, end = end))
+#'   dplyr::bind_rows((x = res))
+#' }
+#'
+#' #' Title
+#' #'
+#' #' @param start
+#' #' @param end
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples
+#' nomics_supplies_interval <- function(start, end){
+#'   start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
+#'   end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
+#'   res <- query_nomics(endpoint = "supplies/interval", args = list(start = start, end = end))
+#'   dplyr::bind_rows((x = res))
+#' }
+#'
+#' #' Title
+#' #'
+#' #' @param start
+#' #' @param end
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples
+#' nomics_marketcap <- function(start, end){
+#'   start <- format(lubridate::as_datetime(start), "%Y-%m-%dT%H:%M:%SZ")
+#'   end <- format(lubridate::as_datetime(end), "%Y-%m-%dT%H:%M:%SZ")
+#'   query_nomics(endpoint = "market-cap/history", args = list(start = start, end = end))
+#' }

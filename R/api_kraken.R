@@ -216,6 +216,16 @@ kraken_ticker <- function(pair) {
   return(ticker)
 }
 
+#' Get a pair's last available price
+#'
+#' @param pair
+#'
+#' @return
+#' @export
+#'
+kraken_lastprice <- function(pair){
+  as.numeric(kraken_ticker(pair = pair)$result[[1]]$c[[1]])
+}
 
 #' Get order book
 #'
@@ -304,6 +314,42 @@ kraken_balance <- function(){
                     as.vector(unlist(balance$result))) %>%
     magrittr::set_names(c("asset", "balance")) %>%
     dplyr::mutate(balance = as.numeric(balance))
+}
+
+#' Get current and target allocation
+#'
+#' @param target_allocation
+#'
+#' @return
+#' @export
+#'
+#' @examples
+kraken_allocation_current <- function(target_allocation){
+
+  balance <- kraken_balance()
+  assetpairs <- kraken_assetpairs()
+
+  balance <- balance %>% dplyr::left_join(y = assetpairs %>%
+                                            dplyr::filter(quote == "ZEUR") %>%
+                                            dplyr::select(base, altname), by = c("asset" = "base")) %>%
+    dplyr::left_join(y = target_allocation, by = "asset")
+
+
+  pairs <- balance  %>% dplyr::filter(altname != "NA") %>% dplyr::pull(altname)
+  prices <- sapply(X = pairs, kraken_lastprice)
+  prices <- dplyr::as_tibble(prices) %>% dplyr::mutate(asset = names(prices))
+
+  balance %>% dplyr::left_join(y = prices,by = c("altname" = "asset")) %>%
+    dplyr::mutate(weight = dplyr::if_else(is.na(weight), 0, weight),
+                  value = dplyr::if_else(asset == "ZEUR", 1, value),
+                  value_quote = balance * value,
+                  assets = sum(value_quote,na.rm = TRUE),
+                  weight_current = value_quote / assets,
+                  value_quote_target = weight * assets,
+                  value_quote_diff = value_quote_target - value_quote,
+                  balance_target = value_quote_target / value,
+                  balance_diff = balance_target - balance)
+
 }
 
 
