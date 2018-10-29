@@ -1,20 +1,20 @@
-query_nomics <- function(endpoint, args = list()){
-
-  key <- key_nomics()
-
-  post_data <- paste0("https://api.nomics.com/v1","/",endpoint)
-
-  args_key <- list(key = key)
-  args_full <- append(args_key, args)
-
-  url <- paste(post_data, paste(paste(names(args_full), args_full, sep = "="), collapse = "&"), sep = "?")
-
-  res <- httr::POST(url = url)
-  res <- httr::content(res)
-
-  return(res)
-
-}
+# query_nomics <- function(endpoint, args = list()){
+#
+#   key <- key_nomics()
+#
+#   post_data <- paste0("https://api.nomics.com/v1","/",endpoint)
+#
+#   args_key <- list(key = key)
+#   args_full <- append(args_key, args)
+#
+#   url <- paste(post_data, paste(paste(names(args_full), args_full, sep = "="), collapse = "&"), sep = "?")
+#
+#   res <- httr::POST(url = url)
+#   res <- httr::content(res)
+#
+#   return(res)
+#
+# }
 
 
 # nomics_markets <- function(){
