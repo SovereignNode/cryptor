@@ -4,13 +4,13 @@
 \alias{kraken_rebalance_portfolio}
 \title{Rebalance the portfolio on Kraken}
 \usage{
-kraken_rebalance_portfolio(current_allocation)
+kraken_rebalance_portfolio(allocation_summary)
 }
 \arguments{
-\item{current_allocation}{the current allocation}
+\item{allocation_summary}{the current allocation (returned from kraken_allocation_current())}
 }
 \value{
-nothing
+void
 }
 \description{
 Rebalance the portfolio on Kraken

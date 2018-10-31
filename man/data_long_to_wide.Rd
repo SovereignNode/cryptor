@@ -2,13 +2,16 @@
 % Please edit documentation in R/utils.R
 \name{data_long_to_wide}
 \alias{data_long_to_wide}
-\title{Title}
+\title{Convert long dataframe to a wide format}
 \usage{
 data_long_to_wide(long)
 }
 \arguments{
-\item{long}{}
+\item{long}{a dataframe in long format}
+}
+\value{
+a dataframe
 }
 \description{
-Title
+Convert long dataframe to a wide format
 }

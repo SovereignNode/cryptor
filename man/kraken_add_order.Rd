@@ -22,6 +22,9 @@ kraken_add_order(pair, type, ordertype, price, price2, volume,
 
 \item{validate}{validate inputs only.  do not submit order (optional)}
 }
+\value{
+void
+}
 \description{
 Add standard order
 }

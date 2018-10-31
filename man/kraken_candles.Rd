@@ -2,7 +2,7 @@
 % Please edit documentation in R/api_kraken.R
 \name{kraken_candles}
 \alias{kraken_candles}
-\title{get candle data}
+\title{Get candle data}
 \usage{
 kraken_candles(pairs, interval = 1440)
 }
@@ -15,5 +15,5 @@ kraken_candles(pairs, interval = 1440)
 a dataframe with OHLC data
 }
 \description{
-get candle data
+Get candle data
 }

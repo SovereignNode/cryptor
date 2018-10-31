@@ -2,13 +2,18 @@
 % Please edit documentation in R/utils.R
 \name{index_series}
 \alias{index_series}
-\title{Title}
+\title{Index a timeseries at a given point}
 \usage{
 index_series(wide, lookback)
 }
 \arguments{
-\item{lookback}{}
+\item{wide}{a dataframe in wide format}
+
+\item{lookback}{period to look back}
+}
+\value{
+an indexed time-series
 }
 \description{
-Title
+Index a timeseries at a given point
 }

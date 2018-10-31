@@ -9,6 +9,9 @@ kraken_lastprice(pair)
 \arguments{
 \item{pair}{}
 }
+\value{
+last available price for a given pair
+}
 \description{
 Get a pair's last available price
 }

@@ -2,13 +2,16 @@
 % Please edit documentation in R/api_kraken.R
 \name{kraken_assetpairs}
 \alias{kraken_assetpairs}
-\title{get available assetpairs}
+\title{Get available assetpairs}
 \usage{
 kraken_assetpairs(excl_darkpool = TRUE)
+}
+\arguments{
+\item{excl_darkpool}{}
 }
 \value{
 available assetpairs on Kraken
 }
 \description{
-get available assetpairs
+Get available assetpairs
 }

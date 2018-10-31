@@ -2,13 +2,21 @@
 % Please edit documentation in R/api_cmc.R
 \name{cmc_top_n}
 \alias{cmc_top_n}
-\title{Title}
+\title{Extract top_n currencies from CoinMarketCap}
 \usage{
 cmc_top_n(top_n = 40)
 }
 \arguments{
-\item{top_n}{}
+\item{top_n}{number of currencies to list (<100)}
+}
+\value{
+top n currencies by market-cap
 }
 \description{
-Title
+Extract top_n currencies from CoinMarketCap
+}
+\examples{
+\dontrun{
+cmc_top_n()
+}
 }

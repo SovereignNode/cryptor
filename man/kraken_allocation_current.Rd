@@ -7,8 +7,16 @@
 kraken_allocation_current(target_allocation)
 }
 \arguments{
-\item{target_allocation}{}
+\item{target_allocation}{(required) a target allocation as a dataframe (Nx2) with column names `asset` * `target_weight`}
+}
+\value{
+dataframe of the current allocation on Kraken
 }
 \description{
 Get current and target allocation
+}
+\examples{
+\dontrun{
+kraken_allocation_current(target_allocation = some.allocation.target)
+}
 }

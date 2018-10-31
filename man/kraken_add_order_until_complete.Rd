@@ -14,7 +14,7 @@ kraken_add_order_until_complete(pair, type, volume)
 \item{volume}{volume to execute}
 }
 \value{
-nothing
+void
 }
 \description{
 Add orders until rebalanced
