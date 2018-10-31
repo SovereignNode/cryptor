@@ -14,3 +14,17 @@ enum_ordertype_kraken <- function(){
   list('market' = 'market',
        'limit' = 'limit')
 }
+
+enum_interval_nomics <- function(){
+  list('1h' = '1h',
+       '1d' = '1d')
+}
+
+enum_interval_nomics2 <- function(){
+  list('1m' = '1m',
+       '5m' = '5m',
+       '30m' = '30m',
+       '1h' = '1h',
+       '4h' = '4h',
+       '1d' = '1d')
+}

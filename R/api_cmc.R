@@ -1,16 +1,18 @@
-#' Title
+#' Extract top_n currencies from CoinMarketCap
 #'
-#' @param top_n
+#' @param top_n number of currencies to list (<100)
 #'
-#' @return
+#' @return top n currencies by market-cap
 #' @export
 #'
-#' @examples
+#' @examples \dontrun{
+#' cmc_top_n()
+#' }
 cmc_top_n <- function(top_n = 40){
     url <- paste0("https://api.coinmarketcap.com/v2/ticker/?convert=USD&limit=",as.character(top_n))
     coin_market_cap <- jsonlite::fromJSON(txt = url)
-
     combined_frame <- dplyr::data_frame()
+
     for (i in 1:top_n){
         name <- coin_market_cap$data[[i]]$name
         symbol <- coin_market_cap$data[[i]]$symbol

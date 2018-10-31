@@ -14,12 +14,15 @@
 #'
 query_kraken <- function(url, sign = FALSE, args = NULL) {
 
+  if(!is.null(args)){
+    args <- args[!unlist(lapply(X = args, FUN = is.null))]
+  }
+
   if(isTRUE(sign)){
     key         <- key_kraken()
     secret      <- secret_kraken()
     nonce       <- as.character(as.numeric(Sys.time()) * 1e+06)
     post_data   <- paste0("nonce=", nonce)
-
     if (length(args) > 0) {
       post_data <- paste(post_data, paste(paste(names(args), args, sep = "="), collapse = "&"), sep = "&")
     }
@@ -81,7 +84,9 @@ kraken_assets <- function() {
     do.call(what = dplyr::bind_rows, args = assets$result)
 }
 
-#' get available assetpairs
+#' Get available assetpairs
+#'
+#' @param excl_darkpool
 #'
 #' @return available assetpairs on Kraken
 #' @export
@@ -89,16 +94,12 @@ kraken_assets <- function() {
 kraken_assetpairs <- function(excl_darkpool = TRUE) {
 
     assets <- query_kraken(url = "https://api.kraken.com/0/public/AssetPairs",sign = FALSE)
-    df     <- do.call(dplyr::bind_rows,
-                      plyr::llply(
-                        .data = assets$result,
-                        .fun = function(x)
-                          x[unlist(lapply(
-                            X = x,
-                            FUN = function(x)
-                              length(x) == 1
-                          ))]
-                      ))
+    df     <- do.call(what = dplyr::bind_rows,
+                      args = plyr::llply(.data = assets$results,
+                                         .fun = function(x) x[unlist(lapply(X = x,
+                                                                            FUN = function(x) length(x) == 1))]
+                      )
+    )
     assetpairs <- names(assets$result)
     df         <- dplyr::bind_cols(assetpair = assetpairs, df)
 
@@ -108,7 +109,7 @@ kraken_assetpairs <- function(excl_darkpool = TRUE) {
 }
 
 
-#' get candle data
+#' Get candle data
 #'
 #' @param pairs list of assetpair names or altnames to retrieve OHLC data.
 #' @param interval integer corresponding to candle interval
@@ -134,7 +135,6 @@ kraken_candles <- function(pairs, interval = 1440) {
 #' @param interval integer corresponding to time interval
 #'
 #' @return OHLC dataframe
-#' @export
 #'
 kraken_ohlc <- function(pair, interval = 1440) {
 
@@ -148,10 +148,7 @@ kraken_ohlc <- function(pair, interval = 1440) {
     attempt <- attempt + 1
     try(ohlc_data <- kraken_ohlc_simple(pair = pair, interval = interval))
     Sys.sleep(sleep_base * (log(attempt) + 1))
-
-    if (attempt > max_attemps) {
-      stop(paste0("Function execution halted: Too many attempts to query OHLC data on ", pair))
-    }
+    if (attempt > max_attemps) {stop(paste0("Function execution halted: Too many attempts to query OHLC data on ", pair))}
   }
 
   ohlc_data
@@ -163,7 +160,6 @@ kraken_ohlc <- function(pair, interval = 1440) {
 #' @param interval an interval on Kraken
 #'
 #' @return OHLC dataframe
-#' @export
 #'
 kraken_ohlc_simple <- function(pair, interval = 1440) {
 
@@ -201,7 +197,6 @@ kraken_ohlc_simple <- function(pair, interval = 1440) {
   frame %>%
     dplyr::distinct() %>%
     tidyr::fill(-time)
-
 }
 
 
@@ -220,7 +215,7 @@ kraken_ticker <- function(pair) {
 #'
 #' @param pair
 #'
-#' @return
+#' @return last available price for a given pair
 #' @export
 #'
 kraken_lastprice <- function(pair){
@@ -245,9 +240,7 @@ kraken_orderbook <- function(pair, count = 10) {
   # We have to add names to use bind_rows
   for (i in 1:2) {
     names(x = OrderBook[[i]]) <- seq(1, count)
-    for (j in 1:count) {
-      names(x = OrderBook[[i]][[j]]) <- c("price", "volume", "time")
-    }
+    for (j in 1:count) { names(x = OrderBook[[i]][[j]]) <- c("price", "volume", "time") }
   }
 
   Asks <- dplyr::bind_rows(OrderBook$asks) %>%
@@ -265,8 +258,6 @@ kraken_orderbook <- function(pair, count = 10) {
 
   return(orderbook)
 }
-
-
 
 
 #' Get recent spread data
@@ -318,12 +309,14 @@ kraken_balance <- function(){
 
 #' Get current and target allocation
 #'
-#' @param target_allocation
+#' @param target_allocation (required) a target allocation as a dataframe (Nx2) with column names `asset` * `target_weight`
 #'
-#' @return
+#' @return dataframe of the current allocation on Kraken
 #' @export
 #'
-#' @examples
+#' @examples \dontrun{
+#' kraken_allocation_current(target_allocation = some.allocation.target)
+#' }
 kraken_allocation_current <- function(target_allocation){
 
   balance <- kraken_balance()
@@ -340,12 +333,12 @@ kraken_allocation_current <- function(target_allocation){
   prices <- dplyr::as_tibble(prices) %>% dplyr::mutate(asset = names(prices))
 
   balance %>% dplyr::left_join(y = prices,by = c("altname" = "asset")) %>%
-    dplyr::mutate(weight = dplyr::if_else(is.na(weight), 0, weight),
+    dplyr::mutate(target_weight = dplyr::if_else(is.na(target_weight), 0, target_weight),
                   value = dplyr::if_else(asset == "ZEUR", 1, value),
                   value_quote = balance * value,
                   assets = sum(value_quote,na.rm = TRUE),
                   weight_current = value_quote / assets,
-                  value_quote_target = weight * assets,
+                  value_quote_target = target_weight * assets,
                   value_quote_diff = value_quote_target - value_quote,
                   balance_target = value_quote_target / value,
                   balance_diff = balance_target - balance)
@@ -504,9 +497,75 @@ kraken_ledger <- function(simple = TRUE) {
 }
 
 
+# Kraken Private Funding --------------------------------------------------
 
+#' Get deposit methods
+
+#'
+#' @param aclass (optional) asset class
+#' @param asset (required) asset being deposited
+#'
+#' @return associative array of deposit methods
+#' @export
+#'
+#' @examples
+kraken_get_deposit_methods <- function(aclass = NULL, asset){
+  query_kraken(url = "https://api.kraken.com/0/private/DepositMethods",
+               sign = TRUE,
+               args = list(aclass = aclass, asset = asset))$result[[1]]
+}
+
+#' Get deposit addresses
+#'
+#' @param aclass (optional) asset class
+#' @param asset (required) asset being deposited
+#' @param method (required) name of the deposit method
+#' @param new whether or not to generate a new address (optional. default = false)
+#'
+#' @return associative array of deposit addresses
+#' @export
+#'
+#' @examples
+kraken_get_deposit_address <- function(aclass = NULL, asset, method, new = NULL){
+  query_kraken(url = "https://api.kraken.com/0/private/DepositAddresses",
+               sign = TRUE,
+               args = list(aclass = aclass, asset = asset, method = method, new = new))$result[[1]]
+}
+
+#' Get withdrawal information
+#'
+#' @param aclass (optional) asset class
+#' @param asset asset being withdrawn
+#' @param key withdrawal key name, as set up on your account
+#' @param amount amount to withdraw
+#'
+#' @return associative array of withdrawal info:
+#' @export
+#'
+#' @examples
+kraken_get_withdrawal_info <- function(aclass = NULL, asset, key, amount){
+  query_kraken(url = "https://api.kraken.com/0/private/WithdrawInfo",
+               sign = TRUE,
+               args = list(aclass = aclass, asset = asset, key = key, amount = amount))
+}
+
+#' Withdraw funds
+#'
+#' @param aclass (optional) asset class
+#' @param asset asset being withdrawn
+#' @param key withdrawal key name, as set up on your account
+#' @param amount amount to withdraw, including fee's
+#'
+#' @return associative array of withdrawal transaction:
+#' @export
+#'
+#' @examples
+kraken_withdraw_funds <- function(aclass = NULL, asset, key, amount){
+  query_kraken(url = "https://api.kraken.com/0/private/Withdraw",
+               sign = TRUE,
+               args = list(aclass = aclass, asset = asset, key = key, amount = amount))
+}
 # Kraken Private TRADING --------------------------------------------------
-
 
 
 #' Add standard order
@@ -517,9 +576,7 @@ kraken_ledger <- function(simple = TRUE) {
 #' @keywords internal
 #'
 kraken_add_order_internal <- function(args){
-
   # Use with caution - make sure args is correct !
-
   query_kraken(url = "https://api.kraken.com/0/private/AddOrder",
                sign = TRUE,
                args = args)
@@ -537,7 +594,7 @@ kraken_add_order_internal <- function(args){
 #' @param ordertype order type:
 #' @param validate validate inputs only.  do not submit order (optional)
 #'
-#' @return
+#' @return void
 #' @export
 #'
 kraken_add_order <- function(pair, type, ordertype, price, price2, volume, validate = TRUE){
@@ -590,7 +647,6 @@ kraken_add_order <- function(pair, type, ordertype, price, price2, volume, valid
 }
 
 
-
 #' Cancel open order
 #'
 #' @param txid transaction id
@@ -599,11 +655,9 @@ kraken_add_order <- function(pair, type, ordertype, price, price2, volume, valid
 #' @export
 #'
 kraken_cancel_open_order <- function(txid) {
-
   assertthat::not_empty(txid)
   query_kraken(url = "https://api.kraken.com/0/private/CancelOrder", sign = TRUE, args = list(txid = txid))
 }
-
 
 
 #' Cancel open orders or a selection of order ids
@@ -614,31 +668,29 @@ kraken_cancel_open_order <- function(txid) {
 #' @export
 #'
 kraken_cancel_open_orders <- function(ids) {
-
   assertthat::not_empty(ids)
   lapply(ids, kraken_cancel_open_order)
-
 }
 
 
 
 # LOGIC -------------------------------------------------------------------
 
-
 #' Rebalance the portfolio on Kraken
 #'
-#' @param current_allocation the current allocation
+#' @param allocation_summary the current allocation (returned from kraken_allocation_current())
 #'
-#' @return nothing
+#' @return void
 #' @export
-kraken_rebalance_portfolio <- function(current_allocation) {
+#'
+kraken_rebalance_portfolio <- function(allocation_summary) {
 
   answer <- readline(prompt = "Rebalancing portfolio. Press Y to continue: ")
   if (toupper(answer) != "Y") { stop("User aborted") }
 
   # if current allocation is not provided then query it...
 
-  to_allocate <- current_allocation %>%
+  to_allocate <- allocation_summary %>%
     mutate(TYPE = if_else(CCY_DIFF_FINAL < 0 , "sell", "buy")) %>%
     filter(CCY_DIFF_FINAL != "NA") %>%
     select(ASSET, TYPE, CCY_DIFF_FINAL) %>%
@@ -685,7 +737,8 @@ kraken_rebalance_portfolio <- function(current_allocation) {
 #' @param type a type of order (buy or sell)
 #' @param volume volume to execute
 #'
-#' @return nothing
+#' @return void
+#'
 kraken_add_order_until_complete <- function(pair, type, volume) {
   # Place on the highest BID until executed
   complete <- FALSE
