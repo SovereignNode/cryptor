@@ -8,9 +8,7 @@
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
+* TBC
 
 ### Contribution guidelines ###
 
