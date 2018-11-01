@@ -10,6 +10,7 @@
 #' @param args List of additional arguments to query
 #'
 #' @return Returns the result from the API query to Kraken
+#'
 #' @export
 #'
 query_kraken <- function(url, sign = FALSE, args = NULL) {
@@ -43,10 +44,14 @@ query_kraken <- function(url, sign = FALSE, args = NULL) {
 #' @param key API key
 #' @param nonce a nonce value
 #' @param post_data additional post data to include in Signature
+#'
 #' @importFrom digest hmac digest
 #' @importFrom base64enc base64decode base64encode
 #' @importFrom httr add_headers
-#' @return
+#'
+#' @keywords internal
+#'
+#' @return header to include in the query_kraken call
 #'
 sign_kraken <- function(url, secret, key, nonce, post_data){
 
@@ -69,7 +74,8 @@ sign_kraken <- function(url, secret, key, nonce, post_data){
 
 #' get Kraken servertime
 #'
-#' @return a unix timestamp
+#' @return a unix timestamp representing Kraken's servertime
+#'
 #' @export
 #'
 kraken_servertime <- function(){
@@ -79,6 +85,7 @@ kraken_servertime <- function(){
 #' get available assets
 #'
 #' @return available assets on Kraken
+#'
 #' @export
 #'
 kraken_assets <- function() {
@@ -91,7 +98,9 @@ kraken_assets <- function() {
 #' @param excl_darkpool (optional) exclude darkpool assetpairs from the list (default = TRUE).
 #'
 #' @return available assetpairs on Kraken
+#'
 #' @export
+#'
 #' @importFrom plyr llply
 #'
 kraken_assetpairs <- function(excl_darkpool = TRUE) {
@@ -118,6 +127,7 @@ kraken_assetpairs <- function(excl_darkpool = TRUE) {
 #' @param interval integer corresponding to candle interval
 #'
 #' @return a dataframe with OHLC data
+#'
 #' @export
 #'
 kraken_candles <- function(pairs, interval = 1440) {
@@ -163,6 +173,7 @@ kraken_ohlc <- function(pair, interval = 1440) {
 #' @param interval an interval on Kraken
 #'
 #' @return OHLC dataframe
+#'
 #' @importFrom tidyr fill
 #'
 kraken_ohlc_simple <- function(pair, interval = 1440) {
@@ -209,10 +220,10 @@ kraken_ohlc_simple <- function(pair, interval = 1440) {
 #' @param pair an assetpair
 #'
 #' @return ticker information for a given assetpair
+#'
 kraken_ticker <- function(pair) {
   url <- paste0("https://api.kraken.com/0/public/Ticker?pair=", pair)
-  ticker <- query_kraken(url = url, sign = FALSE)
-  return(ticker)
+  query_kraken(url = url, sign = FALSE)
 }
 
 #' Get a pair's last available price
@@ -220,6 +231,7 @@ kraken_ticker <- function(pair) {
 #' @param pair a valid Kraken asset pair.
 #'
 #' @return last available price for a given pair
+#'
 #' @export
 #'
 kraken_lastprice <- function(pair){
@@ -232,6 +244,7 @@ kraken_lastprice <- function(pair){
 #' @param count maximum number of asks/bids (optional)
 #'
 #' @return dataframe of pair name and market depth
+#'
 #' @export
 #'
 kraken_orderbook <- function(pair, count = 10) {
@@ -269,6 +282,7 @@ kraken_orderbook <- function(pair, count = 10) {
 #' @param pair asset pair to get spread data for
 #'
 #' @return dataframe of pair name and recent spread data
+#'
 #' @export
 #'
 kraken_spread <- function(pair) {
@@ -301,6 +315,7 @@ kraken_spread <- function(pair) {
 #' Get trade balance
 #'
 #' @return array of asset names and balance amount
+#'
 #' @export
 #'
 kraken_balance <- function(){
@@ -316,6 +331,7 @@ kraken_balance <- function(){
 #' @param target_allocation (required) a target allocation as a dataframe (Nx2) with column names `asset` * `target_weight`
 #'
 #' @return dataframe of the current allocation on Kraken
+#'
 #' @export
 #'
 #' @examples \dontrun{
@@ -351,8 +367,11 @@ kraken_allocation_current <- function(target_allocation){
 
 
 #' Get open orders
+#'
 #' @param userref (optional) a given 'userref' to query for (default = NULL)
+#'
 #' @return array of order info in open array with txid as the key
+#'
 #' @export
 #'
 kraken_get_open_orders <- function(userref = NULL) {
@@ -364,7 +383,9 @@ kraken_get_open_orders <- function(userref = NULL) {
 #' Get closed orders
 #'
 #' @return dataframe of order info
+#'
 #' @export
+#'
 #' @importFrom utils modifyList
 #'
 kraken_get_closed_orders <- function(){
@@ -393,7 +414,9 @@ kraken_get_closed_orders <- function(){
 #' @param txid comma delimited list of transaction ids to query info about (20 maximum)
 #'
 #' @return associative array of orders info
+#'
 #' @export
+#'
 kraken_query_orders_info <- function(txid = NULL, userref = NULL) {
   assertthat::is.string(x = txid)
   order_result <- query_kraken(url = "https://api.kraken.com/0/private/QueryOrders",
@@ -579,6 +602,7 @@ kraken_withdraw_funds <- function(aclass = NULL, asset, key, amount){
 #' @param args list of arguments to include in API call
 #'
 #' @return order description info and array of transaction ids for order (if order was added successfully)
+#'
 #' @keywords internal
 #'
 kraken_add_order_internal <- function(args){
@@ -601,6 +625,7 @@ kraken_add_order_internal <- function(args){
 #' @param validate validate inputs only.  do not submit order (optional)
 #'
 #' @return void
+#'
 #' @export
 #'
 kraken_add_order <- function(pair, type, ordertype, price, price2, volume, validate = TRUE){
@@ -658,6 +683,7 @@ kraken_add_order <- function(pair, type, ordertype, price, price2, volume, valid
 #' @param txid transaction id
 #'
 #' @return list of number of orders canceled and pending information
+#'
 #' @export
 #'
 kraken_cancel_open_order <- function(txid) {
@@ -671,6 +697,7 @@ kraken_cancel_open_order <- function(txid) {
 #' @param ids vector or list of txid's to close (optional)
 #'
 #' @return list of return values from kraken_cancel_open_order()
+#'
 #' @export
 #'
 kraken_cancel_open_orders <- function(ids) {
