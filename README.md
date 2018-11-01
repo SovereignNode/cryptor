@@ -47,6 +47,10 @@ nomics_markets()
 
 # Public Kraken API calls can be called without credentials
 kraken_assetpairs()
+
+# Private Kraken API calls require credentials to be set first
+credentials_kraken(key = 'abcd', secret = '123')
+kraken_ledger()
 ```
 
 ``` r

@@ -15,3 +15,50 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
+# Overview
+
+cryptor provides a generalized API wrapper for multiple data sources:
+
+1. Kraken
+2. Binance
+3. Nomics
+
+```{r init}
+library(cryptor)
+```
+
+# Kraken
+
+The original Kraken API documentation can be found [here](https://www.kraken.com/help/api).
+
+```{r kraken.public}
+kraken_servertime()
+kraken_assets()
+kraken_assetpairs(excl_darkpool = TRUE)
+kraken_assetpairs(excl_darkpool = FALSE)
+kraken_candles(pairs = "XBTEUR", interval = 1440)
+kraken_candles(pairs = c("BCHEUR", "XBTEUR"), interval = 1440)
+kraken_candles(pairs = "ETHEUR", interval = 240)
+kraken_lastprice(pair = "EOSEUR")
+kraken_orderbook(pair = "XBTEUR", count = 5)
+kraken_spread(pair = "XBTEUR")
+```
+
+```{r kraken.private}
+
+```
+
+# Nomics
+
+The original Nomics API documentation can be found [here](http://docs.nomics.com/).
+
+```{r cred.nomics}
+credentials_nomics(key = "2018-09-demo-dont-deploy-b69315e440beb145") # demo API key can be outdated
+```
+
+```{r}
+nomics_markets()
+nomics_currencies()
+```
+
