@@ -1,6 +1,6 @@
 Package: cryptor
 Title: Utility for Crypto research
-Version: 0.91
+Version: 0.92
 Author: Thibaut Van Weehaeghe
 Maintainer: Thibaut Van Weehaeghe <thibaut.vanweehaeghe@gmail.com>
 Description: This package is a function library to research crypto data.
