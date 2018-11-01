@@ -18,8 +18,9 @@ sign_kraken(url, secret, key, nonce, post_data)
 \item{post_data}{additional post data to include in Signature}
 }
 \value{
-
+header to include in the query_kraken call
 }
 \description{
 Signature method for the Kraken API
 }
+\keyword{internal}

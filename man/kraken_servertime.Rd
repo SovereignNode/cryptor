@@ -7,7 +7,7 @@
 kraken_servertime()
 }
 \value{
-a unix timestamp
+a unix timestamp representing Kraken's servertime
 }
 \description{
 get Kraken servertime
