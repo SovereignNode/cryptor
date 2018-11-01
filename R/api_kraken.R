@@ -98,7 +98,7 @@ kraken_assetpairs <- function(excl_darkpool = TRUE) {
 
     assets <- query_kraken(url = "https://api.kraken.com/0/public/AssetPairs",sign = FALSE)
     df     <- do.call(what = dplyr::bind_rows,
-                      args = plyr::llply(.data = assets$results,
+                      args = plyr::llply(.data = assets$result,
                                          .fun = function(x) x[unlist(lapply(X = x,
                                                                             FUN = function(x) length(x) == 1))]
                       )
