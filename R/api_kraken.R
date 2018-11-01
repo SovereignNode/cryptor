@@ -43,7 +43,9 @@ query_kraken <- function(url, sign = FALSE, args = NULL) {
 #' @param key API key
 #' @param nonce a nonce value
 #' @param post_data additional post data to include in Signature
-#'
+#' @importFrom digest hmac digest
+#' @importFrom base64enc base64decode base64encode
+#' @importFrom httr add_headers
 #' @return
 #'
 sign_kraken <- function(url, secret, key, nonce, post_data){
@@ -86,10 +88,11 @@ kraken_assets <- function() {
 
 #' Get available assetpairs
 #'
-#' @param excl_darkpool
+#' @param excl_darkpool (optional) exclude darkpool assetpairs from the list (default = TRUE).
 #'
 #' @return available assetpairs on Kraken
 #' @export
+#' @importFrom plyr llply
 #'
 kraken_assetpairs <- function(excl_darkpool = TRUE) {
 
@@ -160,6 +163,7 @@ kraken_ohlc <- function(pair, interval = 1440) {
 #' @param interval an interval on Kraken
 #'
 #' @return OHLC dataframe
+#' @importFrom tidyr fill
 #'
 kraken_ohlc_simple <- function(pair, interval = 1440) {
 
@@ -213,7 +217,7 @@ kraken_ticker <- function(pair) {
 
 #' Get a pair's last available price
 #'
-#' @param pair
+#' @param pair a valid Kraken asset pair.
 #'
 #' @return last available price for a given pair
 #' @export
@@ -347,7 +351,7 @@ kraken_allocation_current <- function(target_allocation){
 
 
 #' Get open orders
-#'
+#' @param userref (optional) a given 'userref' to query for (default = NULL)
 #' @return array of order info in open array with txid as the key
 #' @export
 #'
@@ -359,10 +363,9 @@ kraken_get_open_orders <- function(userref = NULL) {
 
 #' Get closed orders
 #'
-#' @param userref restrict results to given user reference id (optional)
-#'
 #' @return dataframe of order info
 #' @export
+#' @importFrom utils modifyList
 #'
 kraken_get_closed_orders <- function(){
 
@@ -371,7 +374,7 @@ kraken_get_closed_orders <- function(){
   continue <- TRUE
   while(continue){
     res <-   query_kraken(url = "https://api.kraken.com/0/private/ClosedOrders", sign = TRUE, args = list(ofs = offset))
-    combined <- modifyList(x = combined, res)
+    combined <- utils::modifyList(x = combined, res)
     offset <- offset + 50
     continue <- (length(res$result$closed) >= 50)
   }
@@ -403,7 +406,10 @@ kraken_query_orders_info <- function(txid = NULL, userref = NULL) {
 
 #' get ledger information
 #'
+#' @param simple (optional) Get 'simple' ledger or not (default = TRUE)
 #' @return returns the ledger dataframe
+#' @importFrom utils modifyList
+#' @importFrom tidyr gather
 #' @export
 #'
 kraken_ledger <- function(simple = TRUE) {
@@ -415,7 +421,7 @@ kraken_ledger <- function(simple = TRUE) {
     Ledger <- query_kraken(url = "https://api.kraken.com/0/private/Ledgers",
                            sign = TRUE,
                            args = list(ofs = ofset))$result$ledger
-    Ledger.comb <- modifyList(Ledger.comb, Ledger)
+    Ledger.comb <- utils::modifyList(Ledger.comb, Ledger)
     ofset       <- ofset + 50
     continue    <- (length(Ledger) >= 50)
   }
@@ -449,7 +455,7 @@ kraken_ledger <- function(simple = TRUE) {
     }
     # Next add prices
     data_long <- data_wide %>%
-      dplyr::gather(key = assetpair, value = close,-time) %>%
+      tidyr::gather(key = assetpair, value = close,-time) %>%
       dplyr::mutate(time = as.Date(time, origin = "1970-01-01"))
 
     Ledger <- Ledger %>%

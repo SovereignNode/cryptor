@@ -6,6 +6,9 @@
 \usage{
 kraken_get_open_orders(userref = NULL)
 }
+\arguments{
+\item{userref}{(optional) a given 'userref' to query for (default = NULL)}
+}
 \value{
 array of order info in open array with txid as the key
 }

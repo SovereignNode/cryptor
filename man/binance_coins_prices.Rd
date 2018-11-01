@@ -6,6 +6,9 @@
 \usage{
 binance_coins_prices(unit = "USDT")
 }
+\arguments{
+\item{unit}{(optional) default unit = 'USDT'}
+}
 \value{
 data.table
 }

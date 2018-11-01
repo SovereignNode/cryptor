@@ -7,7 +7,7 @@
 kraken_lastprice(pair)
 }
 \arguments{
-\item{pair}{}
+\item{pair}{a valid Kraken asset pair.}
 }
 \value{
 last available price for a given pair

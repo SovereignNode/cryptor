@@ -21,10 +21,12 @@ data_long_to_wide <- function(long){
 #'
 #' @return a dataframe
 #' @export
+#' @importFrom tidyr gather fill
+#'
 data_wide_to_long <- function(wide){
   long <- wide %>%
-    gather(key = "pair", value = "close", -time) %>%
-    fill(close)
+    tidyr::gather(key = "pair", value = "close", -time) %>%
+    tidyr::fill(close)
 }
 
 

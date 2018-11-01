@@ -6,6 +6,9 @@
 \usage{
 kraken_ledger(simple = TRUE)
 }
+\arguments{
+\item{simple}{(optional) Get 'simple' ledger or not (default = TRUE)}
+}
 \value{
 returns the ledger dataframe
 }

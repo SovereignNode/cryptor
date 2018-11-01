@@ -7,7 +7,7 @@
 kraken_assetpairs(excl_darkpool = TRUE)
 }
 \arguments{
-\item{excl_darkpool}{}
+\item{excl_darkpool}{(optional) exclude darkpool assetpairs from the list (default = TRUE).}
 }
 \value{
 available assetpairs on Kraken

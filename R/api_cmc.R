@@ -4,6 +4,7 @@
 #'
 #' @return top n currencies by market-cap
 #' @export
+#' @importFrom jsonlite fromJSON
 #'
 #' @examples \dontrun{
 #' cmc_top_n()

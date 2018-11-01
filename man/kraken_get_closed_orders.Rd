@@ -6,9 +6,6 @@
 \usage{
 kraken_get_closed_orders()
 }
-\arguments{
-\item{userref}{restrict results to given user reference id (optional)}
-}
 \value{
 dataframe of order info
 }
