@@ -2,26 +2,27 @@
 % Please edit documentation in R/api_nomics.R
 \name{nomics_candles}
 \alias{nomics_candles}
-\title{The exchange candles endpoint returns raw open, close, high, low, and volume information for Nomics Markets.
-The data is not aggregated, therefore prices are in the quote currency of the market and volume is in the base currency of the market.}
+\title{Exchange candles endpoint}
 \usage{
-nomics_candles(interval, exchange, market, start = NULL, end = NULL)
+nomics_candles(interval = "1d", exchange, market, start = NULL,
+  end = NULL)
 }
 \arguments{
-\item{interval}{Time interval of the candle}
+\item{interval}{(optional) Time interval of the candle ('1d' or '1h'). Default is '1d'.}
 
 \item{exchange}{Exchange ID}
 
 \item{market}{Market ID}
 
-\item{start}{(optional)}
+\item{start}{(optional) Start time of the interval in POSIXct format. If not provided, starts from first candle.}
 
-\item{end}{(optional)}
+\item{end}{(optional) End time of the interval in POSIXct format. If not provided, the current time is used.}
 }
 \value{
 A list of candles
 }
 \description{
-The exchange candles endpoint returns raw open, close, high, low, and volume information for Nomics Markets.
-The data is not aggregated, therefore prices are in the quote currency of the market and volume is in the base currency of the market.
+returns raw open, close, high, low, and volume information for Nomics Markets.
+  The data is not aggregated, therefore prices are in the quote currency of the market and
+  volume is in the base currency of the market.
 }

@@ -59,6 +59,30 @@ credentials_nomics(key = "2018-09-demo-dont-deploy-b69315e440beb145") # demo API
 
 ```{r}
 nomics_markets()
+nomics_markets(exchange = 'kraken')
+nomics_markets(exchange = 'kraken', base = 'btc', quote = 'eur')
+
 nomics_currencies()
+
+nomics_prices()
+nomics_prices_markets()
+nomics_prices_markets(currency = 'btc')
+nomics_prices_markets(currency = 'eth')
+nomics_prices_markets(currency = 'abc')
+
+
+nomics_prices_exchange_markets()
+nomics_prices_exchange_markets(currency = 'btc')
+nomics_prices_exchange_markets(currency = 'btc',exchange = 'kraken')
+
+
+nomics_candles_aggr()
+nomics_candles_aggr(interval = '1d')
+nomics_candles_aggr(interval = '1d', currency = 'eth')
+nomics_candles_aggr(interval = '1d', currency = 'xlm', start = lubridate::ymd(20180101))
+nomics_candles_aggr(interval = '1h', currency = 'bch', start = lubridate::ymd(20180101))
+
+nomics_candles(exchange = 'kraken', market = 'xxbtzeur')
+nomics_candles(exchange = 'kraken', market = 'xxbtzeur', interval = '1h')
 ```
 

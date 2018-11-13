@@ -2,19 +2,12 @@
 % Please edit documentation in R/api_nomics.R
 \name{nomics_currencies_sparkline}
 \alias{nomics_currencies_sparkline}
-\title{The currencies sparkline endpoint returns prices for all currencies within a customizable time interval
- suitable for sparkline charts.
-Note the timestamps and prices are built off of OHLCV candles using the close price.
-This means that the timestamp represents the start of the candle, and the price is the close price of that candle.
-This means the response's final timestamp and price value are always as current as possible,
- but also that the price is effectively "off" by one candle.
- This endpoint is designed to serve as a convenient way to render sparklines,
- if you need exactly aligned times and prices you can use the Aggregated OHLCV Candles endpoint.}
+\title{Currencies sparkline}
 \usage{
-nomics_currencies_sparkline(start, end = NULL)
+nomics_currencies_sparkline(start = NULL, end = NULL)
 }
 \arguments{
-\item{start}{(required) Start time of the interval in POSIXct format.}
+\item{start}{(optional) Start time of the interval in POSIXct format. If not provided, yesterday is used.}
 
 \item{end}{(optional) End time of the interval in POSIXct format. If not provided, the current time is used.}
 }
@@ -22,12 +15,16 @@ nomics_currencies_sparkline(start, end = NULL)
 Currency performance over time for all currencies over the requested time period.
 }
 \description{
-The currencies sparkline endpoint returns prices for all currencies within a customizable time interval
- suitable for sparkline charts.
-Note the timestamps and prices are built off of OHLCV candles using the close price.
-This means that the timestamp represents the start of the candle, and the price is the close price of that candle.
-This means the response's final timestamp and price value are always as current as possible,
- but also that the price is effectively "off" by one candle.
- This endpoint is designed to serve as a convenient way to render sparklines,
- if you need exactly aligned times and prices you can use the Aggregated OHLCV Candles endpoint.
+\code{nomics_currencies_sparkline} returns prices for all currencies
+  within a customizable time interval suitable for sparkline charts.
+
+  Note the timestamps and prices are built off of OHLCV candles using the close price.
+  This means that the timestamp represents the start of the candle, and the price is the close price of that candle.
+  This means the response's final timestamp and price value are always as current as possible,
+  but also that the price is effectively "off" by one candle.
+  This endpoint is designed to serve as a convenient way to render sparklines,
+  if you need exactly aligned times and prices you can use the Aggregated OHLCV Candles endpoint.
+}
+\references{
+http://docs.nomics.com/#operation/getCurrenciesSparkline
 }
