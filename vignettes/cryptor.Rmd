@@ -84,5 +84,8 @@ nomics_candles_aggr(interval = '1h', currency = 'bch', start = lubridate::ymd(20
 
 nomics_candles(exchange = 'kraken', market = 'xxbtzeur')
 nomics_candles(exchange = 'kraken', market = 'xxbtzeur', interval = '1h')
+
+
+nomics_mcap_hist_aggr()
 ```
 

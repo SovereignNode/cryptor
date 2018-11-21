@@ -2,13 +2,17 @@
 % Please edit documentation in R/api_nomics.R
 \name{nomics_mcap_indiv}
 \alias{nomics_mcap_indiv}
-\title{Title}
+\title{Market capitalization for individuals currencies}
 \usage{
 nomics_mcap_indiv(date)
 }
 \arguments{
-\item{date}{}
+\item{date}{(required) Date to return market caps for in POSIXct format.}
+}
+\value{
+Market capitalizations for all currencies on a given date.
 }
 \description{
-Title
+\code{nomics_mcap_indiv} returns the individual market caps for for all cryptoassets
+  at a given date
 }

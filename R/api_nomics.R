@@ -237,65 +237,47 @@ nomics_candles <- function(interval = '1d', exchange, market, start = NULL, end 
 # Nomics Market Caps -----------------------------------------------------------
 
 
-#' MarketCap History
-#'
-#' @description \code{nomics_mcap_hist_aggr} returns the total market cap for all cryptoassets
-#'   at intervals between the requested time period.
-#' @param start (optional) Start time of the interval in POSIXct format. If not provided, yesterday will be used.
-#' @param end (optional) End time of the interval in POSIXct format. If not provided, the current time is used.
-#' @return Performance over time for the entire market.
-#' @export
-#' @examples
-nomics_mcap_hist_aggr <- function(start = NULL, end = NULL){
 
-  if(is.null(start)){
-    start <- Sys.time() - lubridate::days(1)
-  }
-  if(is.null(end)){
-    end <- Sys.time()
-  }
-  query_nomics(endpoint = "market-cap/history",
-               args = list(start = to_rfc3339(start),
-                           end = to_rfc3339(end))) %>%
-    dplyr::bind_rows() %>%
-    dplyr::mutate(timestamp = from_rfc3339(timestamp)) %>%
-    dplyr::mutate(market_cap = as.numeric(market_cap))
-}
-
-#' Title
+#' Market capitalization for individuals currencies
 #'
-#' @param date
+#' @description \code{nomics_mcap_indiv} returns the individual market caps for for all cryptoassets
+#'   at a given date
 #'
-#' @return
+#' @param date (required) Date to return market caps for in POSIXct format.
+#'
+#' @return Market capitalizations for all currencies on a given date.
 #' @export
 #'
 #' @examples
 nomics_mcap_indiv <- function(date){
 
   start <- date - lubridate::days(1)
-
-  nomics_currencies() %>%
-    left_join(y = (nomics_currencies_interval(start = start, end = date) %>%
-                     select(currency, close_timestamp, close)), by = c('id' = 'currency')) %>%
-    left_join(y = (nomics_supplies_interval(start = start, end = date) %>%
-                     select(currency, close_timestamp, close_available, close_max)), by = c('id' = 'currency')) %>%
-    mutate(close_mcap = close * close_available) %>%
-    arrange(desc(close_mcap)) %>%
-    rename(close_timestamp = close_timestamp.x) %>%
-    select(id, close_timestamp, close_mcap)
+  out <- tryCatch(
+    {
+      nomics_currencies() %>%
+        dplyr::left_join(y = (nomics_interval_currencies(start = start, end = date) %>%
+                                dplyr::select(currency, close_timestamp, close)), by = c('id' = 'currency')) %>%
+        dplyr::left_join(y = (nomics_interval_supplies(start = start, end = date) %>%
+                                dplyr::select(currency, close_timestamp, close_available, close_max)), by = c('id' = 'currency')) %>%
+        dplyr::mutate(close_mcap = close * close_available) %>%
+        dplyr::arrange(desc(close_mcap)) %>%
+        dplyr::rename(close_timestamp = close_timestamp.x) %>%
+        dplyr::select(id, close_timestamp, close_mcap)
+    },
+    error=function(cond) {
+      # Choose a return value in case of error
+      return(NULL)
+    },
+    warning=function(cond) {
+      message(cond)
+      # Choose a return value in case of warning
+      return(NULL)
+    }
+  )
+  return(out)
 }
 
-#' Title
-#'
-#' @param dates
-#'
-#' @return
-#' @export
-#'
-#' @examples
-nomics_mcap_hist_indiv <- function(dates){
-  dplyr::bind_rows(lapply(X = dates, FUN = nomics_mcap_indiv))
-}
+
 
 
 
@@ -468,7 +450,9 @@ nomics_interval_currencies <- function(start, end = NULL){
   if(!is.null(end)){end <- to_rfc3339(end)}
 
   res <- query_nomics(endpoint = "currencies/interval", args = list(start = start, end = end))
-  res <- dplyr::bind_rows((x = res)) %>%
+  res <- dplyr::bind_rows((x = res))
+  if(plyr::empty(res)){warning("Empty frame returned");return(res)}
+  res <- res %>%
     dplyr::mutate(open_timestamp = from_rfc3339(open_timestamp),
                   close_timestamp = from_rfc3339(close_timestamp)) %>%
     dplyr::mutate(open = as.numeric(open),
@@ -501,6 +485,9 @@ nomics_interval_supplies <- function(start, end = NULL){
                                                                           FUN = function(x) length(x) == 1))]
                     )
   )
+
+  if(plyr::empty(df)){warning("Empty frame returned");return(df)}
+
   df %>%
     dplyr::mutate(open_timestamp = from_rfc3339(open_timestamp),
                   close_timestamp = from_rfc3339(close_timestamp)) %>%
@@ -508,4 +495,53 @@ nomics_interval_supplies <- function(start, end = NULL){
                   open_max = as.numeric(open_max),
                   close_available = as.numeric(close_available),
                   close_max = as.numeric(close_max))
+}
+
+
+#' Market capitalization for individuals currencies historical
+#'
+#' @description \code{nomics_interval_mcap_indiv} returns the individual market caps for all cryptoassets
+#'   between a start and end date.
+#'
+#' @param start (optional) Start time of the interval in POSIXct format. If not provided, yesterday will be used.
+#' @param end (optional) End time of the interval in POSIXct format. If not provided, the current time is used.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+nomics_interval_mcap_indiv <- function(start = NULL, end = NULL){
+  if(is.null(start)){
+    start <- Sys.time() - lubridate::days(1)
+  }
+  if(is.null(end)){
+    end <- Sys.time()
+  }
+  dates <- seq.POSIXt(from = start, to = end, by = 'day')
+  dplyr::bind_rows(lapply(X = dates, FUN = nomics_mcap_indiv))
+}
+
+#' Market capitalization history in aggregate
+#'
+#' @description \code{nomics_interval_mcap_aggr} returns the aggregate market cap for all cryptoassets
+#'   at intervals between the requested time period.
+#' @param start (optional) Start time of the interval in POSIXct format. If not provided, yesterday will be used.
+#' @param end (optional) End time of the interval in POSIXct format. If not provided, the current time is used.
+#' @return Performance over time for the entire market.
+#' @export
+#' @examples
+nomics_interval_mcap_aggr <- function(start = NULL, end = NULL){
+
+  if(is.null(start)){
+    start <- Sys.time() - lubridate::days(1)
+  }
+  if(is.null(end)){
+    end <- Sys.time()
+  }
+  query_nomics(endpoint = "market-cap/history",
+               args = list(start = to_rfc3339(start),
+                           end = to_rfc3339(end))) %>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(timestamp = from_rfc3339(timestamp)) %>%
+    dplyr::mutate(market_cap = as.numeric(market_cap))
 }
