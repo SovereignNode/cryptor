@@ -68,8 +68,3 @@ kraken_candles(pairs = "XBTEUR", interval = 1440) %>%
 ## Contribution guideline
 
 All contributions are welcome. Feel free to add issues / PR's.
-
-## Who do I talk to?
-
-* You can contact me at *thibaut.vanweehaeghe@gmail.com*
-* ETH adress: 0x05Aa67ce7D9a9A4Cb115d3CC5c7dbaE250eB1539
