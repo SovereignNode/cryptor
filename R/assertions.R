@@ -41,6 +41,11 @@ assertthat::on_failure(is_interval_nomics2) <- function(call, env){
 }
 
 
+# nomics isempty ----------------------------------------------------------
+
+
+
+
 # kraken available pairs --------------------------------------------------
 
 

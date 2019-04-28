@@ -7,9 +7,9 @@
 #' @importFrom jsonlite fromJSON
 #'
 #' @examples \dontrun{
-#' cmc_top_n()
+#' api_cmc_top_n()
 #' }
-cmc_top_n <- function(top_n = 40){
+api_cmc_top_n <- function(top_n = 40){
     url <- paste0("https://api.coinmarketcap.com/v2/ticker/?convert=USD&limit=",as.character(top_n))
     coin_market_cap <- jsonlite::fromJSON(txt = url)
     combined_frame <- dplyr::data_frame()

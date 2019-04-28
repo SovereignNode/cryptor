@@ -2,18 +2,20 @@
 % Please edit documentation in R/api_nomics.R
 \name{nomics_currencies}
 \alias{nomics_currencies}
-\title{The currencies endpoint returns all the currencies that Nomics supports}
+\title{Nomics currencies}
 \usage{
 nomics_currencies()
 }
 \value{
-supported currencies in a tibble
+a tibble
 }
 \description{
-The currencies endpoint returns all the currencies that Nomics supports
+\code{nomics_currencies} returns all the currencies that Nomics supports.
 }
 \examples{
-\dontrun{
 nomics_currencies()
+
 }
+\references{
+http://docs.nomics.com/#operation/getCurrencies
 }

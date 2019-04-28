@@ -4,8 +4,8 @@
 \alias{binance_query}
 \title{Request the Binance API}
 \usage{
-binance_query(endpoint, method = "GET", params = list(), sign = FALSE,
-  retry = method == "GET")
+binance_query(endpoint, method = "GET", params = list(),
+  sign = FALSE, retry = method == "GET")
 }
 \arguments{
 \item{endpoint}{string}

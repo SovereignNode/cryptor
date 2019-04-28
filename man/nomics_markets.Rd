@@ -2,22 +2,39 @@
 % Please edit documentation in R/api_nomics.R
 \name{nomics_markets}
 \alias{nomics_markets}
-\title{The markets endpoint returns information on the exchanges and markets that Nomics supports,
-in addition to the Nomics currency identifiers for the base and quote currency.}
+\title{Nomics markets}
 \usage{
 nomics_markets(exchange = NULL, base = NULL, quote = NULL)
 }
 \arguments{
 \item{exchange}{(optional) a string of exchange ID to filter by (e.g. "kraken")}
 
-\item{base}{(optional) a comma separated list of base currencies to filter by (e.g. "BTC,BCH" / "ETH")}
+\item{base}{(optional) a comma separated vector of base currencies to filter by (e.g. "BTC,BCH" / "ETH")}
 
-\item{quote}{(optional) a comma separated list of quote currencies to filter by (e.e. "ETH,ETC" / "BCH")}
+\item{quote}{(optional) a comma separated vector of quote currencies to filter by (e.e. "ETH,ETC" / "BCH")}
 }
 \value{
-a dataframe of markets
+a tibble
 }
 \description{
-The markets endpoint returns information on the exchanges and markets that Nomics supports,
-in addition to the Nomics currency identifiers for the base and quote currency.
+\code{nomics_markets} returns information on the exchanges and markets that Nomics supports,
+    in addition to the Nomics currency identifiers for the base and quote currency.
+}
+\examples{
+# Basic query
+nomics_markets()
+
+# Query only 'BTC' markets
+nomics_markets(base = c("BTC"))
+
+# Query only 'kraken' markets
+nomics_markets(exchange = "kraken")
+
+# Query invalid exchange markets
+\dontrun{
+nomics_markets(exchange = 123)}
+
+}
+\references{
+http://docs.nomics.com/#operation/getMarkets
 }
