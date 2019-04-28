@@ -789,8 +789,7 @@ kraken_add_order_until_complete <- function(pair, type, volume) {
     # Since this is a loop, danger to create multiple orders here !
     # First time in this loop there will be NO open orders.
     if (first) {
-      PlacedOrder <- kraken_add_order(account = "fcd",
-                                      assetpair = pair,
+      PlacedOrder <- kraken_add_order(pair = pair,
                                       direction = type,
                                       type = "limit",
                                       price = BidPrice,
@@ -804,8 +803,7 @@ kraken_add_order_until_complete <- function(pair, type, volume) {
         # nothing to do
       } else{
         kraken_close_open_orders(refid = OrderID)
-        PlacedOrder <- kraken_add_order(account = "fcd",
-                                        assetpair = pair,
+        PlacedOrder <- kraken_add_order(assetpair = pair,
                                         direction = type,
                                         type = "limit",
                                         price = BidPrice,
